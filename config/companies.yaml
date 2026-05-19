@@ -1,0 +1,18 @@
+companies:
+  - name: Sonar
+    parser: lever
+    company_id: sonarsource
+
+  - name: Swisscom
+    parser: workday
+    url: ...
+
+  - name: Proton
+    parser: greenhouse
+    board_token: proton
+
+  - name: SBB
+    parser: generic_html
+    url: ...
+
+  
