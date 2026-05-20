@@ -36,22 +36,23 @@ The system prioritizes:
 
 ```
 config/
-companies.yaml
+    companies.yaml
 
 core/
-scraper.py # orchestration
-fetcher.py # HTTP requests
-parser.py # parsing abstraction
-matcher.py # filtering/scoring logic
-notifier.py # Telegram integration
-scheduler.py # cron entrypoint
+    scraper.py      # orchestration
+    fetcher.py      # HTTP requests
+    parser.py       # parsing abstraction
+    matcher.py      # filtering/scoring logic
+    notifier.py     # Telegram integration
+    scheduler.py    # cron entrypoint
 
 parsers/
-base.py
-greenhouse.py
-lever.py
-workday.py
-generic_html.py
+    base.py
+    greenhouse.py
+    lever.py
+    workday.py
+    successfactors.py   # (important later)
+    generic_html.py
 
 storage/
 jobs.db # SQLite database
@@ -95,10 +96,10 @@ CREATE TABLE jobs (
     url TEXT UNIQUE,
     location TEXT,
     description TEXT,
-    hash TEXT UNIQUE,
-    first_seen TIMESTAMP,
-    last_seen TIMESTAMP,
-    score INTEGER
+    hash TEXT,
+    raw_score INTEGER DEFAULT 0,
+    filtered INTEGER DEFAULT 0,
+    notified INTEGER DEFAULT 0
 );
 ```
 
@@ -121,7 +122,7 @@ hash = sha1(title + company + location)
 
 ### 5.1 HTTP-first approach (default)
 
-Steps:
+#### Steps:
 
 1. GET careers page or API endpoint
 2. Detect response type:
@@ -129,6 +130,8 @@ Steps:
     - HTML → parse with BeautifulSoup/selectolax
 3. Extract job postings
 4. Normalize fields into standard schema
+
+For Greenhouse jobs, always prefer `?content=true` when available to enrich descriptions.
 
 ---
 
@@ -143,7 +146,7 @@ If job listings are not available via HTTP:
 
 ## 6. Standard Job Schema
 
-All parsers must output:
+All parsers must output a normalized job object BEFORE storage:
 
 ``` python
 Job {
@@ -155,11 +158,26 @@ Job {
 }
 ```
 
+This ensures all downstream logic is parser-agnostic.
+
 ---
 
 ## 7. Filtering / Matching Engine
 
-### 7.1 Keyword-based scoring (MVP)
+- Filtering happens BEFORE scoring and is strictly binary (pass/fail).
+- Scoring only applies to already-filtered jobs.
+
+### 7.1 Hard Filtering (NEW)
+
+```
+if no INCLUDE keyword match:
+    reject job
+
+if any EXCLUDE keyword match:
+    reject job
+```
+
+### 7.2 Keyword-based scoring (MVP)
 
 #### Positive signals:
 - devops
@@ -185,20 +203,19 @@ Job {
 
 ---
 
-### 7.2 Scoring model
+### 7.3 Scoring model
 
 ```
 score = 0
 
 +10 for each positive keyword match
 -20 for each negative keyword match
--30 if language requirement != English
 +5 if junior/mid level detected
 ```
 
 ---
 
-### 7.3 Threshold
+### 7.4 Threshold
 ```
 score >= 10 → include in output
 ```
@@ -282,16 +299,17 @@ Cons:
 ```
 1. Load companies.yaml
 2. For each company:
-    2.1 fetch page/API
-    2.2 parse jobs
-    2.3 normalize jobs
+    2.1 fetch jobs
+    2.2 normalize jobs
 3. For each job:
     3.1 compute hash
-    3.2 check SQLite if exists
-    3.3 if new → store
-    3.4 apply filter scoring
-4. Collect matching jobs
-5. Send Telegram digest
+    3.2 check if exists in DB
+    3.3 if new → store raw job
+    3.4 apply HARD FILTER
+    3.5 compute score
+4. Update last_seen for all fetched jobs
+5. Collect filtered jobs above threshold
+6. Send Telegram digest
 ```
 
 ---
