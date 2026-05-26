@@ -28,23 +28,53 @@ class WorkdayParser(BaseParser):
     def _fetch_data(self):
 
         try:
-            response = requests.get(self.endpoint, timeout=15)
-            response.raise_for_status()
-            return response.json()
+            all_jobs = []
+            offset = 0
+            limit = 20
+            total = None
+
+            while True:
+                payload = {
+                    "appliedFacets": {},
+                    "limit": limit,
+                    "offset": offset,
+                    "searchText": ""
+                }
+                response = requests.post(self.endpoint, timeout=15, json=payload)
+                response.raise_for_status()
+                data = response.json()
+
+                batch = data.get("jobPostings", [])
+
+                # Capture total from first response only
+                if total is None:
+                    total = data.get("total", 0)
+
+                if not batch:
+                    break
+
+                all_jobs.extend(batch)
+
+                if len(all_jobs) >= total:
+                    break
+
+                offset += limit
+
+            return {"jobPostings": all_jobs}
         except requests.RequestException as e:
             print(f"[Workday] Failed to fetch data for {self.company}: {e}")
             return {"jobPostings": []}
 
     def _normalize_job(self, job) -> dict:
-        
+
         try:
             return {
                 "company": self.company,
                 "title": job.get("title", "").strip(),
                 "url": self._build_job_url(job),
-                "location": job.get("locationText", ""),
-                "description": None, # Workday API does NOT provide it
-                "source": "workday"
+                "location": job.get("locationsText", ""),
+                "description": "",
+                "parser": "workday"
             }
         except KeyError as e:
             print(f"[Workday] Missing expected field {e} in job data for {self.company}")

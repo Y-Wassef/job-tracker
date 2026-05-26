@@ -20,32 +20,53 @@ def load_companies():
     
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run the script without inserting jobs into the database or sending notifications."
+    )
+    parser.add_argument(
+        "--respect-db",
+        action="store_true",
+        help="In dry-run mode, skip jobs that already exist in the database."
+    )
+    parser.add_argument(
+        "--companies",
+        nargs="+",
+        help="Run only selected companies."
+    )
+
     return parser.parse_args()
 
-def main(dry_run=False):
+def main(dry_run=False, respect_db=False, selected_companies=None):
 
     init_db()
 
     companies = load_companies()
 
+    if selected_companies:
+        companies = [c for c in companies if c["name"] in selected_companies]
+        if not companies:
+            print("No matching companies found for the specified names.")
+            return
+
     new_jobs = []
 
     for company in companies:
 
-        if not company.get("enabled", True):
-            continue      
+        if not selected_companies and not company.get("enabled", True):
+            continue
 
         parser_type = company["parser"]
 
         #switch-case for parser types
-        switcher = {
+        PARSER_MAP = {
             "workday": WorkdayParser,
             "greenhouse": GreenhouseParser,
             # "generic_html": GenericHTMLParser
         }
 
-        parser_class = switcher.get(parser_type)
+        parser_class = PARSER_MAP.get(parser_type)
         if not parser_class:
             print(f"Unknown parser type '{parser_type}' for company {company['name']}. Skipping.")
             continue
@@ -57,20 +78,31 @@ def main(dry_run=False):
 
             if not is_relevant(job):
                 continue
+            
+            exists = job_exists(job["url"])
 
-            if not job_exists(job["url"]):
+            if dry_run:
 
-                if dry_run:
-                    print(
-                        # f"[MATCH] "
-                        # f"{job['company']} | "
-                        f"{job['title']} | "
-                        # f"{job['location']}"
-                        f"Keywords: {', '.join(matching_keywords(job['title']))}"
-                    )
-                else:
-                    insert_job(job)
+                if respect_db and exists:
+                    continue
+                
+                prefix = "[SEEN]" if exists else "[NEW]"
+                print(
+                    f"{prefix} "
+                    f"{job['company']} | "
+                    f"{job['title']} | "
+                    f"{job['location']} | "
+                    f"Keywords: {', '.join(matching_keywords(job['title']))}"
+                )
 
+                new_jobs.append(job)
+
+            else:
+
+                if exists:
+                    continue
+
+                insert_job(job)
                 new_jobs.append(job)
 
     if new_jobs:
@@ -89,5 +121,9 @@ def main(dry_run=False):
 
 if __name__ == "__main__":
     args = get_args()
-    main(dry_run=args.dry_run)
+    main(
+        dry_run=args.dry_run,
+        respect_db=args.respect_db,
+        selected_companies=args.companies
+    )
             
