@@ -5,14 +5,13 @@ companies:
 
   - name: Swisscom
     parser: workday
-    url: ...
+    url: https://swisscom.wd103.myworkdayjobs.com/en-US/SwisscomExternalCareers
 
   - name: Proton
     parser: greenhouse
     board_token: proton
+    enabled: false
 
   - name: SBB
     parser: generic_html
     url: ...
-
-  

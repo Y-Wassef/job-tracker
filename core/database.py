@@ -10,9 +10,19 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS jobs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            url TEXT UNIQUE,
-            title TEXT,
+
+            company TEXT NOT NULL,
+
+            url TEXT UNIQUE NOT NULL,
+
+            title TEXT NOT NULL,
+
             location TEXT,
+
+            description TEXT,
+
+            parser TEXT,
+
             date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -36,8 +46,23 @@ def insert_job(job):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT OR IGNORE INTO jobs (url, title, location)
-        VALUES (?, ?, ?)
-    """, (job['url'], job['title'], job['location']))
+        INSERT OR IGNORE INTO jobs (
+            company,
+            url,
+            title,
+            location,
+            description,
+            parser
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        job['company'],
+        job['url'],
+        job['title'],
+        job['location'],
+        job['description'],
+        job['parser']
+    ))
+    
     conn.commit()
     conn.close()
