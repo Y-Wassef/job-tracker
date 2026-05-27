@@ -4,6 +4,7 @@ import argparse
 
 from parsers.greenhouse import GreenhouseParser
 from parsers.workday import WorkdayParser
+from parsers.successfactors import SuccessFactorsParser
 
 from core.database import (
     init_db,
@@ -63,6 +64,7 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
         PARSER_MAP = {
             "workday": WorkdayParser,
             "greenhouse": GreenhouseParser,
+            "successfactors": SuccessFactorsParser,
             # "generic_html": GenericHTMLParser
         }
 
@@ -76,8 +78,8 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
 
         for job in jobs:
 
-            if not is_relevant(job):
-                continue
+            # if not is_relevant(job):
+                # continue
             
             exists = job_exists(job["url"])
 

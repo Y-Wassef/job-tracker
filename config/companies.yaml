@@ -16,3 +16,10 @@ companies:
     partner_id: 25008
     site_id: 5012
     # /Search/Ajax/MatchedJobs hardcode inside parser
+
+  - name: PostFinance
+    parser: successfactors
+    customer_id: sp-prod
+    filter_brand: PostFinance
+    filter_appTemplateId: '25'
+
