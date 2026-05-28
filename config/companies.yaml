@@ -23,3 +23,21 @@ companies:
     filter_brand: PostFinance
     filter_appTemplateId: '25'
 
+  - name: Six-Group
+    parser: sixgroup
+
+  - name: CERN
+    parser: cern
+  - name: EPAM
+    parser: epam
+
+  - name: SonarSource
+    parser: sonarsource
+
+  - name: Temenos
+    parser: workday
+    url: https://temenos.wd103.myworkdayjobs.com/en-US/Temenoscareers
+
+  - name: Scandit
+    parser: greenhouse
+    board_token: scandit

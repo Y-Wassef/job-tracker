@@ -5,6 +5,10 @@ import argparse
 from parsers.greenhouse import GreenhouseParser
 from parsers.workday import WorkdayParser
 from parsers.successfactors import SuccessFactorsParser
+from parsers.sixgroup import SixGroupParser
+from parsers.cern import CernParser
+from parsers.epam import EpamParser
+from parsers.sonarsource import SonarSourceParser
 
 from core.database import (
     init_db,
@@ -65,6 +69,10 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
             "workday": WorkdayParser,
             "greenhouse": GreenhouseParser,
             "successfactors": SuccessFactorsParser,
+            "sixgroup": SixGroupParser,
+            "cern": CernParser,
+            "epam": EpamParser,
+            "sonarsource": SonarSourceParser,
             # "generic_html": GenericHTMLParser
         }
 
@@ -94,6 +102,7 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
                     f"{job['company']} | "
                     f"{job['title']} | "
                     f"{job['location']} | "
+                    # f"{job['description']} | "
                     f"Keywords: {', '.join(matching_keywords(job['title']))}"
                 )
 
