@@ -17,7 +17,7 @@ from core.database import (
 )
 
 from core.notifier import send_notification
-from core.filter import is_relevant, matching_keywords
+from core.filter import is_relevant, matching_keywords, location_filter, score_job
 
 def load_companies():
     with open('config/companies.yaml', 'r') as f:
@@ -40,10 +40,15 @@ def get_args():
         nargs="+",
         help="Run only selected companies."
     )
+    parser.add_argument(
+        "--interactive-locations",
+        action="store_true",
+        help="Prompt for unknown job locations (local mode only)."
+    )
 
     return parser.parse_args()
 
-def main(dry_run=False, respect_db=False, selected_companies=None):
+def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False):
 
     init_db()
 
@@ -64,7 +69,6 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
 
         parser_type = company["parser"]
 
-        #switch-case for parser types
         PARSER_MAP = {
             "workday": WorkdayParser,
             "greenhouse": GreenhouseParser,
@@ -73,7 +77,6 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
             "cern": CernParser,
             "epam": EpamParser,
             "sonarsource": SonarSourceParser,
-            # "generic_html": GenericHTMLParser
         }
 
         parser_class = PARSER_MAP.get(parser_type)
@@ -86,42 +89,48 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
 
         for job in jobs:
 
-            # if not is_relevant(job):
-                # continue
-            
+            if not is_relevant(job):
+                continue
+
+            approved_locs = location_filter(job, interactive=interactive_locations)
+            if not approved_locs:
+                continue
+
             exists = job_exists(job["url"])
 
             if dry_run:
 
                 if respect_db and exists:
                     continue
-                
+
+                score = score_job(job)
                 prefix = "[SEEN]" if exists else "[NEW]"
                 print(
                     f"{prefix} "
                     f"{job['company']} | "
                     f"{job['title']} | "
                     f"{job['location']} | "
-                    # f"{job['description']} | "
+                    f"Score: {score} | "
                     f"Keywords: {', '.join(matching_keywords(job['title']))}"
                 )
 
-                new_jobs.append(job)
+                new_jobs.append((job, score))
 
             else:
 
                 if exists:
                     continue
 
+                score = score_job(job)
                 insert_job(job)
-                new_jobs.append(job)
+                new_jobs.append((job, score))
 
     if new_jobs:
         if not dry_run:
             lines = ["<b>New Job Postings:</b>\n"]
-            for job in new_jobs:
-                lines.append(f"<b>{job['company']}</b>: <a href='{job['url']}'>{job['title']}</a> - {job['location']}")
-        
+            for job, score in new_jobs:
+                lines.append(f"<b>{job['company']}</b>: <a href='{job['url']}'>{job['title']}</a> - {job['location']} (Score: {score})")
+
             message = "\n\n".join(lines)
             send_notification(message)
             print(f"Sent notification for {len(new_jobs)} new jobs.")
@@ -130,11 +139,13 @@ def main(dry_run=False, respect_db=False, selected_companies=None):
     else:
         print("No new jobs found.")
 
+
 if __name__ == "__main__":
     args = get_args()
     main(
         dry_run=args.dry_run,
         respect_db=args.respect_db,
-        selected_companies=args.companies
+        selected_companies=args.companies,
+        interactive_locations=args.interactive_locations
     )
             

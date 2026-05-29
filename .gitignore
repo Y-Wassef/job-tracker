@@ -3,3 +3,5 @@ __pycache__/
 tools/
 storage/jobs.db
 .env
+cv.txt
+swisscom_experience.txt

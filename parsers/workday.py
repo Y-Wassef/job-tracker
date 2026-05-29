@@ -1,4 +1,6 @@
 import requests
+import re
+import time
 from urllib.parse import urlparse
 from parsers.base import BaseParser
 
@@ -11,6 +13,7 @@ class WorkdayParser(BaseParser):
 
         self.base_url, self.tenant, self.site = self._derive_workday_params(self.careers_url)
         self.endpoint = f"{self.base_url}/wday/cxs/{self.tenant}/{self.site}/jobs"
+        self.detail_endpoint_template = f"{self.base_url}/wday/cxs/{self.tenant}/{self.site}/job"
 
     def fetch_jobs(self) -> list[dict]:
 
@@ -68,12 +71,19 @@ class WorkdayParser(BaseParser):
     def _normalize_job(self, job) -> dict:
 
         try:
+            # Extract job ID from externalPath: /job/Zurich/SAP-IS-H-Consultant_R-0003595
+            external_path = job.get('externalPath', '')
+            job_posting_id = external_path.split('/')[-1] if external_path else ''
+
+            # Fetch full details (location + description) from detail endpoint
+            location, description = self._fetch_job_details(job_posting_id) if job_posting_id else ("", "")
+
             return {
                 "company": self.company,
                 "title": job.get("title", "").strip(),
                 "url": self._build_job_url(job),
-                "location": job.get("locationsText", ""),
-                "description": "",
+                "location": location,
+                "description": description,
                 "parser": "workday"
             }
         except KeyError as e:
@@ -86,6 +96,59 @@ class WorkdayParser(BaseParser):
         /job/Zurich/..._R-000123
         """
         return f"{self.base_url}{job.get('externalPath', '')}"
+
+    def _fetch_job_details(self, job_posting_id: str) -> tuple[str, str]:
+        """
+        Fetch job detail endpoint to get location and description.
+        Returns (location_string, description_string).
+        location_string: semicolon-separated (primary; additional1; additional2)
+        description_string: HTML cleaned plain text
+        """
+        try:
+            detail_url = f"{self.detail_endpoint_template}/{job_posting_id}"
+            response = requests.get(detail_url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            job_info = data.get("jobPostingInfo", {})
+
+            # Extract location + additionalLocations
+            location = job_info.get("location", "").strip()
+            additional = job_info.get("additionalLocations", [])
+            locations = [location] if location else []
+            locations.extend([loc.strip() for loc in additional if loc.strip()])
+            location_str = "; ".join(locations) if locations else ""
+
+            # Extract and clean description
+            description_html = job_info.get("jobDescription", "")
+            description = self._clean_html(description_html)
+
+            # Small delay to avoid rate limiting
+            time.sleep(0.1)
+
+            return location_str, description
+
+        except Exception as e:
+            print(f"[Workday] Failed to fetch details for {job_posting_id}: {e}")
+            return "", ""
+
+    def _clean_html(self, html: str) -> str:
+        """Remove HTML tags and normalize whitespace."""
+        if not html:
+            return ""
+        # Remove HTML tags
+        text = re.sub(r'<[^>]+>', '', html)
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text)
+        # Decode common HTML entities
+        text = text.replace("&nbsp;", " ")
+        text = text.replace("&amp;", "&")
+        text = text.replace("&lt;", "<")
+        text = text.replace("&gt;", ">")
+        text = text.replace("&quot;", '"')
+        return text.strip()
+
+
 
     def _derive_workday_params(self, url: str) -> tuple[str, str, str]:
         

@@ -28,6 +28,7 @@ companies:
 
   - name: CERN
     parser: cern
+
   - name: EPAM
     parser: epam
 
