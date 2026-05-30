@@ -1,8 +1,11 @@
 import requests
 import re
 import time
+import logging
 from urllib.parse import urlparse
 from parsers.base import BaseParser
+
+logger = logging.getLogger(__name__)
 
 class WorkdayParser(BaseParser):
 
@@ -65,7 +68,7 @@ class WorkdayParser(BaseParser):
 
             return {"jobPostings": all_jobs}
         except requests.RequestException as e:
-            print(f"[Workday] Failed to fetch data for {self.company}: {e}")
+            logger.error(f"[Workday] Failed to fetch data for {self.company}: {e}")
             return {"jobPostings": []}
 
     def _normalize_job(self, job) -> dict:
@@ -87,7 +90,7 @@ class WorkdayParser(BaseParser):
                 "parser": "workday"
             }
         except KeyError as e:
-            print(f"[Workday] Missing expected field {e} in job data for {self.company}")
+            logger.warning(f"[Workday] Missing expected field {e} in job data for {self.company}")
             return None
 
     def _build_job_url(self, job: dict) -> str:
@@ -129,7 +132,7 @@ class WorkdayParser(BaseParser):
             return location_str, description
 
         except Exception as e:
-            print(f"[Workday] Failed to fetch details for {job_posting_id}: {e}")
+            logger.error(f"[Workday] Failed to fetch details for {job_posting_id}: {e}")
             return "", ""
 
     def _clean_html(self, html: str) -> str:

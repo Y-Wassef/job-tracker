@@ -1,7 +1,10 @@
 import re
 import json
 import requests
+import logging
 from parsers.base import BaseParser
+
+logger = logging.getLogger(__name__)
 
 
 class EpamParser(BaseParser):
@@ -53,11 +56,11 @@ class EpamParser(BaseParser):
                         'parser': 'epam'
                     })
                 except Exception as e:
-                    print(f"Error parsing EPAM job: {e}")
+                    logger.error(f"Error parsing EPAM job: {e}")
                     continue
 
         except Exception as e:
-            print(f"Error fetching EPAM jobs: {e}")
+            logger.error(f"Error fetching EPAM jobs: {e}")
 
         return jobs
 

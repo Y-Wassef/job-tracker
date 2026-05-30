@@ -1,6 +1,6 @@
 import yaml
 import argparse
-
+import logging
 
 from parsers.greenhouse import GreenhouseParser
 from parsers.workday import WorkdayParser
@@ -17,7 +17,10 @@ from core.database import (
 )
 
 from core.notifier import send_notification
-from core.filter import is_relevant, matching_keywords, location_filter, score_job
+from core.filters import is_relevant, matching_keywords, location_filter, score_job
+from core.logging_config import setup_logging, get_logger
+
+logger = get_logger("job-tracker")
 
 def load_companies():
     with open('config/companies.yaml', 'r') as f:
@@ -50,14 +53,15 @@ def get_args():
 
 def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False):
 
+    setup_logging()
     init_db()
 
     companies = load_companies()
 
     if selected_companies:
-        companies = [c for c in companies if c["name"] in selected_companies]
+        companies = [c for c in companies if c["name"].lower() in [name.lower() for name in selected_companies]]
         if not companies:
-            print("No matching companies found for the specified names.")
+            logger.warning("No matching companies found for the specified names.")
             return
 
     new_jobs = []
@@ -81,7 +85,7 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
 
         parser_class = PARSER_MAP.get(parser_type)
         if not parser_class:
-            print(f"Unknown parser type '{parser_type}' for company {company['name']}. Skipping.")
+            logger.warning(f"Unknown parser type '{parser_type}' for company {company['name']}. Skipping.")
             continue
         parser = parser_class(company)
 
@@ -105,7 +109,7 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
 
                 score = score_job(job)
                 prefix = "[SEEN]" if exists else "[NEW]"
-                print(
+                logger.info(
                     f"{prefix} "
                     f"{job['company']} | "
                     f"{job['title']} | "
@@ -133,11 +137,11 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
 
             message = "\n\n".join(lines)
             send_notification(message)
-            print(f"Sent notification for {len(new_jobs)} new jobs.")
+            logger.info(f"Sent notification for {len(new_jobs)} new jobs.")
         else:
-            print(f"[DRY] Found {len(new_jobs)} new jobs.")
+            logger.info(f"[DRY] Found {len(new_jobs)} new jobs.")
     else:
-        print("No new jobs found.")
+        logger.info("No new jobs found.")
 
 
 if __name__ == "__main__":

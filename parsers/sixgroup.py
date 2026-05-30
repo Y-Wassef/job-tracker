@@ -1,8 +1,11 @@
 import re
 import requests
 import time
+import logging
 from bs4 import BeautifulSoup
 from parsers.base import BaseParser
+
+logger = logging.getLogger(__name__)
 
 
 class SixGroupParser(BaseParser):
@@ -54,11 +57,11 @@ class SixGroupParser(BaseParser):
                         'parser': 'sixgroup'
                     })
                 except Exception as e:
-                    print(f"Error parsing job row: {e}")
+                    logger.error(f"Error parsing job row: {e}")
                     continue
 
         except Exception as e:
-            print(f"Error fetching Six-Group jobs: {e}")
+            logger.error(f"Error fetching Six-Group jobs: {e}")
 
         return jobs
 
@@ -83,6 +86,6 @@ class SixGroupParser(BaseParser):
                 description = re.sub(r'\s+', ' ', description)
                 return description.strip()
         except Exception as e:
-            print(f"Error fetching description from {url}: {e}")
+            logger.error(f"Error fetching description from {url}: {e}")
 
         return ''

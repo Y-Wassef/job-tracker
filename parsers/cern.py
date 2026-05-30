@@ -1,8 +1,11 @@
 import re
 import requests
 import time
+import logging
 from bs4 import BeautifulSoup
 from parsers.base import BaseParser
+
+logger = logging.getLogger(__name__)
 
 
 class CernParser(BaseParser):
@@ -51,11 +54,11 @@ class CernParser(BaseParser):
                     time.sleep(0.3)
 
                 except Exception as e:
-                    print(f"Error parsing CERN job link: {e}")
+                    logger.error(f"Error parsing CERN job link: {e}")
                     continue
 
         except Exception as e:
-            print(f"Error fetching CERN jobs: {e}")
+            logger.error(f"Error fetching CERN jobs: {e}")
 
         return jobs
 
@@ -107,6 +110,6 @@ class CernParser(BaseParser):
                         break
 
         except Exception as e:
-            print(f"Error fetching CERN detail from {url}: {e}")
+            logger.error(f"Error fetching CERN detail from {url}: {e}")
 
         return location, description

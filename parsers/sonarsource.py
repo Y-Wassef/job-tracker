@@ -1,8 +1,11 @@
 import re
 import requests
 import time
+import logging
 from bs4 import BeautifulSoup
 from parsers.base import BaseParser
+
+logger = logging.getLogger(__name__)
 
 
 class SonarSourceParser(BaseParser):
@@ -48,11 +51,11 @@ class SonarSourceParser(BaseParser):
                     time.sleep(0.3)
 
                 except Exception as e:
-                    print(f"Error parsing SonarSource job {detail_url}: {e}")
+                    logger.error(f"Error parsing SonarSource job {detail_url}: {e}")
                     continue
 
         except Exception as e:
-            print(f"Error fetching SonarSource jobs: {e}")
+            logger.error(f"Error fetching SonarSource jobs: {e}")
 
         return jobs
 
@@ -108,7 +111,7 @@ class SonarSourceParser(BaseParser):
                     description = description[:5000]
 
         except Exception as e:
-            print(f"Error fetching SonarSource detail from {url}: {e}")
+            logger.error(f"Error fetching SonarSource detail from {url}: {e}")
 
         return location, title, description
 
