@@ -48,10 +48,16 @@ def get_args():
         action="store_true",
         help="Prompt for unknown job locations (local mode only)."
     )
+    parser.add_argument(
+        "--score-threshold",
+        type=int,
+        default=0,
+        help="Minimum job score to insert into database (default: 0 - no filtering). Recommended: 25"
+    )
 
     return parser.parse_args()
 
-def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False):
+def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False, score_threshold=0):
 
     setup_logging()
     init_db()
@@ -100,6 +106,11 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
             if not approved_locs:
                 continue
 
+            score = score_job(job)
+            if score_threshold > 0 and score < score_threshold:
+                logger.debug(f"Job filtered by score threshold ({score} < {score_threshold}): {job['title']}")
+                continue
+
             exists = job_exists(job["url"])
 
             if dry_run:
@@ -107,7 +118,6 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
                 if respect_db and exists:
                     continue
 
-                score = score_job(job)
                 prefix = "[SEEN]" if exists else "[NEW]"
                 logger.info(
                     f"{prefix} "
@@ -125,7 +135,6 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
                 if exists:
                     continue
 
-                score = score_job(job)
                 insert_job(job)
                 new_jobs.append((job, score))
 
@@ -150,6 +159,7 @@ if __name__ == "__main__":
         dry_run=args.dry_run,
         respect_db=args.respect_db,
         selected_companies=args.companies,
-        interactive_locations=args.interactive_locations
+        interactive_locations=args.interactive_locations,
+        score_threshold=args.score_threshold
     )
             

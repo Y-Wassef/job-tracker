@@ -5,3 +5,4 @@ storage/jobs.db
 .env
 cv.txt
 swisscom_experience.txt
+logs/
