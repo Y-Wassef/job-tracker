@@ -14,7 +14,7 @@ class WorkdayParser(BaseParser):
         self.company = company["name"]
         self.careers_url = company["url"]
 
-        self.base_url, self.tenant, self.site = self._derive_workday_params(self.careers_url)
+        self.base_url, self.tenant, self.site, self.path_segment = self._derive_workday_params(self.careers_url)
         self.endpoint = f"{self.base_url}/wday/cxs/{self.tenant}/{self.site}/jobs"
         self.detail_endpoint_template = f"{self.base_url}/wday/cxs/{self.tenant}/{self.site}/job"
 
@@ -98,7 +98,7 @@ class WorkdayParser(BaseParser):
         Workday uses relative paths like:
         /job/Zurich/..._R-000123
         """
-        return f"{self.base_url}{job.get('externalPath', '')}"
+        return f"{self.base_url}/{self.path_segment}{job.get('externalPath', '')}"
 
     def _fetch_job_details(self, job_posting_id: str) -> tuple[str, str]:
         """
@@ -153,13 +153,14 @@ class WorkdayParser(BaseParser):
 
 
 
-    def _derive_workday_params(self, url: str) -> tuple[str, str, str]:
-        
+    def _derive_workday_params(self, url: str) -> tuple[str, str, str, str]:
+
         parsed = urlparse(url)
 
         base_url = f"{parsed.scheme}://{parsed.netloc}"
 
-        # path example: /en-US/SwisscomExtenalCareers
+        # Extract the path segment (e.g., "en-US/SwisscomExternalCareers")
+        path_segment = parsed.path.strip("/") if parsed.path else ""
 
         path_parts = [p for p in parsed.path.split("/") if p]
 
@@ -169,5 +170,5 @@ class WorkdayParser(BaseParser):
         site = path_parts[-1]
         tenant = parsed.netloc.split(".")[0]  # e.g. swisscom
 
-        return base_url, tenant, site
+        return base_url, tenant, site, path_segment
         

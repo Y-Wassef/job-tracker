@@ -54,10 +54,15 @@ def get_args():
         default=0,
         help="Minimum job score to insert into database (default: 0 - no filtering). Recommended: 25"
     )
+    parser.add_argument(
+        "--show-url",
+        action="store_true",
+        help="Show job URL in logs (for debugging, not recommended for regular use)."
+    )
 
     return parser.parse_args()
 
-def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False, score_threshold=0):
+def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False, score_threshold=0, show_url=False):
 
     setup_logging()
     init_db()
@@ -125,8 +130,12 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
                     f"{job['title']} | "
                     f"{job['location']} | "
                     f"Score: {score} | "
+                    f"URL: {job['url']} | " if show_url else "" +
+                    f"Parser: {parser_type} | "
                     f"Keywords: {', '.join(matching_keywords(job['title']))}"
                 )
+                logger.debug(f"Full URL: {job['url']}")
+                logger.debug(f"Full job: {job}")
 
                 new_jobs.append((job, score))
 
@@ -160,6 +169,7 @@ if __name__ == "__main__":
         respect_db=args.respect_db,
         selected_companies=args.companies,
         interactive_locations=args.interactive_locations,
-        score_threshold=args.score_threshold
+        score_threshold=args.score_threshold,
+        show_url=args.show_url
     )
             
