@@ -1,6 +1,7 @@
 import yaml
 import argparse
 import logging
+from pathlib import Path
 
 from parsers.greenhouse import GreenhouseParser
 from parsers.workday import WorkdayParser
@@ -15,7 +16,9 @@ from core.database import (
     job_exists,
     insert_job,
     get_jobs_to_delete,
-    delete_jobs
+    delete_jobs,
+    import_locations_from_json,
+    export_locations_to_json
 )
 
 from core.notifier import send_notification
@@ -24,26 +27,18 @@ from core.logging_config import setup_logging, get_logger
 
 logger = get_logger("job-tracker")
 
+LOCATIONS_PATH = Path("config/locations.json")
+
 def load_companies():
     with open('config/companies.yaml', 'r') as f:
         return yaml.safe_load(f)['companies']
 
 
 def handle_prune(prune_args, execute):
-    """Handle pruning operations. prune_args is a list: [company|'all'] or [company|'all', hours]"""
-    if len(prune_args) == 1:
-        hours = None
-    elif len(prune_args) == 2:
-        try:
-            hours = int(prune_args[1])
-        except ValueError:
-            logger.error(f"Hours must be an integer, got: {prune_args[1]}")
-            return
-    else:
-        logger.error("--prune requires 1 or 2 arguments: [company|'all'] [hours]")
-        return 
-
+    """Handles the prune operation based on the provided arguments."""
+    
     company = prune_args[0].lower()
+    hours = int(prune_args[1]) if len(prune_args) == 2 else None
     
     if not execute:
         jobs_to_delete = get_jobs_to_delete(company, hours)
@@ -117,21 +112,67 @@ def get_args():
         action="store_true",
         help="Perform the deletion without prompting for confirmation (use with caution, especially with --prune all)."
     )
+    parser.add_argument(
+        "--import-locations",
+        type=Path,
+        help="Import location relevance decisions from PATH. The file must end in .json. This will be executed before handling any jobs."
+    )
+    parser.add_argument(
+        "--export-locations",
+        nargs="?",
+        const=LOCATIONS_PATH,
+        type=Path,
+        help=f"Export locations to PATH. If omitted, defaults to {LOCATIONS_PATH}."
+    )
 
-    return parser.parse_args()
+    return parser, parser.parse_args()
 
 
-def validate_args(args):
+def validate_args(parser, args):
+    if args.respect_db and not args.dry_run:
+        parser.error("--respect-db can only be used with --dry-run.")
+
     if args.prune:
-       # no other arguments should be used with --prune except --execute
         if any([args.dry_run, args.respect_db, args.companies,
-                args.interactive_locations, args.score_threshold > 0, args.show_url]):
-            logger.error("--prune cannot be used with other arguments except --execute.")
-            exit(1)
+                args.interactive_locations, args.score_threshold > 0,
+                args.show_url, args.import_locations, args.export_locations]):
+            parser.error("--prune cannot be used with other arguments except --execute.")
+
+        if len(args.prune) < 1 or len(args.prune) > 2:
+            parser.error("--prune requires 1 or 2 arguments: [company|'all'] [hours]")
+
+        if len(args.prune) == 2:
+            try:
+                int(args.prune[1])
+            except ValueError:
+                parser.error(f"Hours must be an integer, got: {args.prune[1]}")
+    
+    if args.export_locations:
+        if any([args.dry_run, args.respect_db, args.companies,
+                args.interactive_locations, args.score_threshold > 0,
+                args.show_url, args.prune, args.import_locations, args.execute]):
+            parser.error("--export-locations cannot be used with other arguments.")
+        if args.export_locations.suffix != '.json':
+            parser.error("--export-locations requires a .json file.")
+
+    if args.import_locations:
+        if args.import_locations.suffix != '.json':
+            parser.error("--import-locations requires a .json file.")
+    
 
 
 
-def main(dry_run=False, respect_db=False, selected_companies=None, interactive_locations=False, score_threshold=0, show_url=False, prune=None, execute=False):
+def main(
+    dry_run=False,
+    respect_db=False,
+    selected_companies=None,
+    interactive_locations=False,
+    score_threshold=0,
+    show_url=False,
+    prune=None,
+    execute=False,
+    import_locations=None,
+    export_locations=None):
 
     setup_logging()
     init_db()
@@ -139,6 +180,17 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
     if prune:
         handle_prune(prune, execute)
         return
+
+    if export_locations:
+        num_exported = export_locations_to_json(export_locations)
+        if num_exported > 0:
+            logger.info(f"Successfully exported {num_exported} locations to {export_locations}")
+        return
+
+    if import_locations:
+        num_imported = import_locations_from_json(import_locations)
+        if num_imported > 0:
+            logger.info(f"Successfully imported {num_imported} locations from {import_locations}")
 
     companies = load_companies()
 
@@ -237,8 +289,8 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
 
 
 if __name__ == "__main__":
-    args = get_args()
-    validate_args(args)
+    parser, args = get_args()
+    validate_args(parser, args)
 
     main(
         dry_run=args.dry_run,
@@ -248,6 +300,8 @@ if __name__ == "__main__":
         score_threshold=args.score_threshold,
         show_url=args.show_url,
         prune=args.prune,
-        execute=args.execute
+        execute=args.execute,
+        export_locations=args.export_locations,
+        import_locations=args.import_locations
     )
             

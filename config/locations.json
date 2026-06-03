@@ -1,0 +1,446 @@
+[
+    {
+        "location": "Skopje",
+        "is_relevant": 0
+    },
+    {
+        "location": "Vilnius",
+        "is_relevant": 0
+    },
+    {
+        "location": "Barcelona",
+        "is_relevant": 0
+    },
+    {
+        "location": "Taipei",
+        "is_relevant": 0
+    },
+    {
+        "location": "Geneva",
+        "is_relevant": 1
+    },
+    {
+        "location": "London",
+        "is_relevant": 0
+    },
+    {
+        "location": "Paris",
+        "is_relevant": 1
+    },
+    {
+        "location": "Prague",
+        "is_relevant": 0
+    },
+    {
+        "location": "London UK",
+        "is_relevant": 0
+    },
+    {
+        "location": "Geneva CH",
+        "is_relevant": 1
+    },
+    {
+        "location": "Bern",
+        "is_relevant": 1
+    },
+    {
+        "location": "Olten",
+        "is_relevant": 1
+    },
+    {
+        "location": "Zurich",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH",
+        "is_relevant": 1
+    },
+    {
+        "location": "Singapore",
+        "is_relevant": 0
+    },
+    {
+        "location": "SG",
+        "is_relevant": 0
+    },
+    {
+        "location": "Madrid",
+        "is_relevant": 0
+    },
+    {
+        "location": "ES",
+        "is_relevant": 0
+    },
+    {
+        "location": "ES+1 weitere \u2026",
+        "is_relevant": 0
+    },
+    {
+        "location": "Warsaw",
+        "is_relevant": 0
+    },
+    {
+        "location": "PL",
+        "is_relevant": 0
+    },
+    {
+        "location": "PL+1 weitere \u2026",
+        "is_relevant": 0
+    },
+    {
+        "location": "Switzerland",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-BE",
+        "is_relevant": 1
+    },
+    {
+        "location": "Schwyz",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-SZ",
+        "is_relevant": 1
+    },
+    {
+        "location": "Lausanne",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-VD",
+        "is_relevant": 1
+    },
+    {
+        "location": "Homeoffice",
+        "is_relevant": 1
+    },
+    {
+        "location": "Carouge GE",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-GE",
+        "is_relevant": 1
+    },
+    {
+        "location": "Herisau",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-AR",
+        "is_relevant": 1
+    },
+    {
+        "location": "Paris.",
+        "is_relevant": 1
+    },
+    {
+        "location": "New York",
+        "is_relevant": 0
+    },
+    {
+        "location": "Washington DC",
+        "is_relevant": 0
+    },
+    {
+        "location": "USA East Coast",
+        "is_relevant": 0
+    },
+    {
+        "location": "USA (remote)",
+        "is_relevant": 0
+    },
+    {
+        "location": "France",
+        "is_relevant": 1
+    },
+    {
+        "location": "Geneva (Gen\u00e8ve)",
+        "is_relevant": 1
+    },
+    {
+        "location": "Monthey",
+        "is_relevant": 1
+    },
+    {
+        "location": "Vevey",
+        "is_relevant": 1
+    },
+    {
+        "location": "S. Antonino",
+        "is_relevant": 1
+    },
+    {
+        "location": "Bellinzona",
+        "is_relevant": 1
+    },
+    {
+        "location": "Grancia",
+        "is_relevant": 1
+    },
+    {
+        "location": "ES+2 weitere \u2026",
+        "is_relevant": 0
+    },
+    {
+        "location": "Frankfurt",
+        "is_relevant": 0
+    },
+    {
+        "location": "DE",
+        "is_relevant": 0
+    },
+    {
+        "location": "GB",
+        "is_relevant": 0
+    },
+    {
+        "location": "CH+1 weitere \u2026",
+        "is_relevant": 0
+    },
+    {
+        "location": "Leudelange",
+        "is_relevant": 0
+    },
+    {
+        "location": "LU",
+        "is_relevant": 0
+    },
+    {
+        "location": "Tampere",
+        "is_relevant": 0
+    },
+    {
+        "location": "United States",
+        "is_relevant": 0
+    },
+    {
+        "location": "Poland",
+        "is_relevant": 0
+    },
+    {
+        "location": "United Kingdom",
+        "is_relevant": 0
+    },
+    {
+        "location": "Italy",
+        "is_relevant": 0
+    },
+    {
+        "location": "Germany",
+        "is_relevant": 0
+    },
+    {
+        "location": "Finland",
+        "is_relevant": 0
+    },
+    {
+        "location": "Boston",
+        "is_relevant": 0
+    },
+    {
+        "location": "Bucharest",
+        "is_relevant": 0
+    },
+    {
+        "location": "Johannesburg",
+        "is_relevant": 0
+    },
+    {
+        "location": "Pakistan Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Australia Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Orlando",
+        "is_relevant": 0
+    },
+    {
+        "location": "Bangalore",
+        "is_relevant": 0
+    },
+    {
+        "location": "Athens",
+        "is_relevant": 0
+    },
+    {
+        "location": "United States Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Sydney",
+        "is_relevant": 0
+    },
+    {
+        "location": "Mexico City",
+        "is_relevant": 0
+    },
+    {
+        "location": "Chennai Perungudi",
+        "is_relevant": 0
+    },
+    {
+        "location": "Hanoi",
+        "is_relevant": 0
+    },
+    {
+        "location": "Costa Rica Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Makati City",
+        "is_relevant": 0
+    },
+    {
+        "location": "Jakarta",
+        "is_relevant": 0
+    },
+    {
+        "location": "Mexico Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Saudi Arabia Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Kanton Zurich",
+        "is_relevant": 1
+    },
+    {
+        "location": "Basel",
+        "is_relevant": 1
+    },
+    {
+        "location": "Kanton Basel-Stadt",
+        "is_relevant": 1
+    },
+    {
+        "location": "Geneve",
+        "is_relevant": 1
+    },
+    {
+        "location": "Kriens",
+        "is_relevant": 1
+    },
+    {
+        "location": "Chavannes-de-Bogis",
+        "is_relevant": 1
+    },
+    {
+        "location": "Fribourg",
+        "is_relevant": 1
+    },
+    {
+        "location": "Weinfelden",
+        "is_relevant": 1
+    },
+    {
+        "location": "St. Gallen",
+        "is_relevant": 1
+    },
+    {
+        "location": "Sion",
+        "is_relevant": 1
+    },
+    {
+        "location": "ExCo Geneva",
+        "is_relevant": 1
+    },
+    {
+        "location": "Riyadh",
+        "is_relevant": 0
+    },
+    {
+        "location": "Casablanca",
+        "is_relevant": 0
+    },
+    {
+        "location": "Cairo",
+        "is_relevant": 0
+    },
+    {
+        "location": "Nairobi",
+        "is_relevant": 0
+    },
+    {
+        "location": "United Kingdom Remote",
+        "is_relevant": 0
+    },
+    {
+        "location": "Lucerne",
+        "is_relevant": 1
+    },
+    {
+        "location": "Luzern",
+        "is_relevant": 1
+    },
+    {
+        "location": "Lugano",
+        "is_relevant": 1
+    },
+    {
+        "location": "Neuch\u00e2tel",
+        "is_relevant": 1
+    },
+    {
+        "location": "Solothurn",
+        "is_relevant": 1
+    },
+    {
+        "location": "Thurgau",
+        "is_relevant": 1
+    },
+    {
+        "location": "Valais",
+        "is_relevant": 1
+    },
+    {
+        "location": "Wallis",
+        "is_relevant": 1
+    },
+    {
+        "location": "Uri",
+        "is_relevant": 1
+    },
+    {
+        "location": "Glarus",
+        "is_relevant": 1
+    },
+    {
+        "location": "Appenzell",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-LU",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-TI",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-NE",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-SO",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-TG",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-UR",
+        "is_relevant": 1
+    },
+    {
+        "location": "CH-GL",
+        "is_relevant": 1
+    }
+]

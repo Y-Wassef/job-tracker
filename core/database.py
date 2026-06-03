@@ -1,5 +1,9 @@
 import sqlite3
+import json
 from pathlib import Path
+from core.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 DB_PATH = Path("storage/jobs.db")
 
@@ -142,3 +146,43 @@ def delete_jobs(company: str, hours: int | None = None) -> int:
         conn.commit()
         return cursor.rowcount
 
+
+def import_locations_from_json(json_path: str) -> int:
+    """Import locations from a JSON file with structure: [{"location": "Location Name", "is_relevant": 1}, ...]
+    Returns the number of locations imported."""
+    try:
+        with open(json_path, 'r') as f:
+            locations = json.load(f)
+        for loc in locations:
+            if get_location_status(loc['location']) is None:
+                add_location(loc['location'], loc['is_relevant'])
+        return len(locations)
+    except FileNotFoundError:
+        logger.warning(f"Import JSON file not found: {json_path}. No locations imported.")
+        return 0
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in import file: {json_path}")
+        return 0
+    except Exception as e:
+        logger.error(f"Unexpected error occurred: {e}")
+        return 0
+
+
+def export_locations_to_json(json_path: str) -> int:
+    """Export all locations from the database to a JSON file with structure: [{"location": "Location Name", "is_relevant": 1}, ...]
+    Returns the number of locations exported."""
+  
+    if Path(json_path).exists():
+        logger.info(f"JSON file already exists: {json_path}. Importing existing locations before export.")
+        import_locations_from_json(json_path)
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT location, is_relevant FROM locations")
+            locations = [{"location": row[0], "is_relevant": row[1]} for row in cursor.fetchall()]
+        with open(json_path, 'w') as f:
+            json.dump(locations, f, indent=4)
+        return len(locations)
+    except Exception as e:
+        logger.error(f"Unexpected error occurred: {e}")
+        return 0
