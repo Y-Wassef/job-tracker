@@ -101,3 +101,44 @@ def get_unknown_locations() -> list[str]:
         cursor.execute("SELECT location FROM locations WHERE is_relevant IS NULL ORDER BY added_date")
         results = cursor.fetchall()
     return [r[0] for r in results]
+
+
+def get_jobs_to_delete(company: str, hours: int | None) -> list[dict]:
+    """Get jobs that would be deleted for a specific company or all companies, optionally filtered by past X hours"""
+    if company == "all":
+        company = "%"  # SQL wildcard to match all companies
+    if hours is not None:
+        time_filter = "AND date_added > datetime('now', '-' || ? || ' hours')"
+        params = (company, hours)
+    else:
+        time_filter = ""
+        params = (company,)
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT id, company, title, url FROM jobs
+            WHERE company LIKE ? {time_filter}
+        """, params)
+        return [dict(row) for row in cursor.fetchall()]
+
+
+def delete_jobs(company: str, hours: int | None = None) -> int:
+    """Delete all jobs from a specific company. Returns count of deleted jobs. If hours is None and company is 'all', requires confirmation before deleting all jobs."""
+    if company == "all":
+        company = "%"  # SQL wildcard to match all companies
+    if hours is not None:
+        time_filter = "AND date_added > datetime('now', '-' || ? || ' hours')"
+        params = (company, hours)
+    else:
+        time_filter = ""
+        params = (company,)
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            DELETE FROM jobs
+            WHERE company LIKE ? {time_filter}
+        """, params)
+        conn.commit()
+        return cursor.rowcount
+
