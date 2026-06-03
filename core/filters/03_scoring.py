@@ -41,11 +41,69 @@ SENIORITY_NEGATIVE = [
     (r"\b5\s+years\b", -15),
 ]
 
+# German language requirement patterns at 4 severity levels
+GERMAN_REQUIRED_PATTERNS = [
+    r"\bgerman\s+required\b",
+    r"\bgerman\s+must\b",
+    r"\bgerman\s+essential\b",
+    r"\bgerman\s+mandatory\b",
+    r"\brequires\s+german\b",
+    r"\bmust\s+speak\s+german\b",
+    r"\bfluency\s+in\s+german\s+required\b",
+    r"\bdeutsch\s+erforderlich\b",
+    r"\bdeutsch\s+notwendig\b",
+    r"\bdeutschkenntnisse\s+erforderlich\b",
+    r"\bfließend\s+deutsch\b",
+    r"\bdeutsch\s+grundvoraussetzung\b",
+]
+
+GERMAN_STRONG_PATTERNS = [
+    r"\bfluent\s+german\b",
+    r"\bvery\s+good\s+german\b",
+    r"\badvanced\s+german\b",
+    r"\bexcellent\s+german\b",
+    r"\bstrong\s+german\b",
+    r"\bfluent\s+in\s+german\b",
+    r"\bhigh\s+level\s+german\b",
+    r"\bsehr\s+gutes\s+deutsch\b",
+    r"\bfortgeschrittenes\s+deutsch\b",
+    r"\bausgezeichnete\s+deutschkenntnisse\b",
+    r"\bhohes\s+deutsch-niveau\b",
+]
+
+GERMAN_GOOD_PATTERNS = [
+    r"\bgood\s+german\b",
+    r"\bgerman\s+skills\b",
+    r"\bworking\s+german\b",
+    r"\bsolid\s+german\b",
+    r"\bproficient\s+in\s+german\b",
+    r"\bintermediate\s+german\b",
+    r"\bgutes\s+deutsch\b",
+    r"\bdeutschkenntnisse\b",
+    r"\barbeitsf[äa]higes\s+deutsch\b",
+    r"\bsolide\s+deutschkenntnisse\b",
+    r"\bmittleres\s+deutsch-niveau\b",
+]
+
+GERMAN_BENEFICIAL_PATTERNS = [
+    r"\bgerman\s+beneficial\b",
+    r"\bgerman\s+is\s+a\s+plus\b",
+    r"\bgerman\s+preferred\b",
+    r"\bgerman\s+advantage\b",
+    r"\bknowledge\s+of\s+german\b",
+    r"\bdeutsch\s+von\s+vorteil\b",
+    r"\bdeutsch\s+w[üu]nschenswert\b",
+    r"\bdeutsch-kenntnisse\s+erw[üu]nscht\b",
+    r"\bvon\s+vorteil\s+deutsch\b",
+    r"\bdeutsch-grundkenntnisse\b",
+]
+
 
 def score_job(job: dict) -> int:
     """Phase 3: Score job based on title and description"""
     title = job['title'].lower()
     description = job.get('description', '').lower()
+    combined_text = title + " " + description
 
     score = 0
 
@@ -70,16 +128,37 @@ def score_job(job: dict) -> int:
 
     # Seniority check
     for keyword in SENIORITY_POSITIVE:
-        if re.search(keyword, title + " " + description):
+        if re.search(keyword, combined_text):
             score += 5
 
     for pattern, penalty in SENIORITY_NEGATIVE:
-        if re.search(pattern, title + " " + description):
+        if re.search(pattern, combined_text):
             score += penalty
 
     # Negative signals
     for keyword in NEGATIVE_KEYWORDS:
         if keyword in description:
             score -= 10
+
+    # German language requirement penalties (check in descending severity order)
+    for pattern in GERMAN_REQUIRED_PATTERNS:
+        if re.search(pattern, combined_text, re.IGNORECASE):
+            score -= 40
+            return score
+
+    for pattern in GERMAN_STRONG_PATTERNS:
+        if re.search(pattern, combined_text, re.IGNORECASE):
+            score -= 25
+            return score
+
+    for pattern in GERMAN_GOOD_PATTERNS:
+        if re.search(pattern, combined_text, re.IGNORECASE):
+            score -= 15
+            return score
+
+    for pattern in GERMAN_BENEFICIAL_PATTERNS:
+        if re.search(pattern, combined_text, re.IGNORECASE):
+            score -= 5
+            return score
 
     return score

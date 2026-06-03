@@ -221,19 +221,19 @@ def main(dry_run=False, respect_db=False, selected_companies=None, interactive_l
                 insert_job(job)
                 new_jobs.append((job, score))
 
-    # if new_jobs:
-    #     if not dry_run:
-    #         lines = ["<b>New Job Postings:</b>\n"]
-    #         for job, score in new_jobs:
-    #             lines.append(f"<b>{job['company']}</b>: <a href='{job['url']}'>{job['title']}</a> - {job['location']} (Score: {score})")
+    if new_jobs:
+        if not dry_run:
+            lines = ["<b>New Job Postings:</b>\n"]
+            for job, score in new_jobs:
+                lines.append(f"<b>{job['company']}</b>: <a href='{job['url']}'>{job['title']}</a> - {job['location']} (Score: {score})")
 
-    #         message = "\n\n".join(lines)
-    #         send_notification(message)
-    #         logger.info(f"Sent notification for {len(new_jobs)} new jobs.")
-    #     else:
-    #         logger.info(f"[DRY] Found {len(new_jobs)} new jobs.")
-    # else:
-    #     logger.info("No new jobs found.")
+            message = "\n\n".join(lines)
+            send_notification(message)
+            logger.info(f"Sent notification for {len(new_jobs)} new jobs.")
+        else:
+            logger.info(f"[DRY] Found {len(new_jobs)} new jobs.")
+    else:
+        logger.info("No new jobs found.")
 
 
 if __name__ == "__main__":
