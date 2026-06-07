@@ -189,6 +189,7 @@ def main(
         num_imported = import_locations_from_json(import_locations)
         if num_imported > 0:
             logger.info(f"Successfully imported {num_imported} locations from {import_locations}")
+        return
 
     companies = load_companies()
 
@@ -282,7 +283,11 @@ def main(
         else:
             logger.info(f"[DRY] Found {len(new_jobs)} new jobs.")
     else:
-        logger.info("No new jobs found.")
+        if dry_run:
+            logger.info("[DRY] No new jobs found.")
+        else:
+            logger.info("No new jobs found.")
+            send_notification("No new job postings found.")
 
 
 if __name__ == "__main__":
