@@ -1,9 +1,9 @@
 import sqlite3
 import json
 from pathlib import Path
-from core.logging_config import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 DB_PATH = Path("storage/jobs.db")
 
@@ -14,19 +14,12 @@ def init_db():
         conn.execute("""
             CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-
                 company TEXT NOT NULL,
-
                 url TEXT UNIQUE NOT NULL,
-
                 title TEXT NOT NULL,
-
                 location TEXT,
-
                 description TEXT,
-
                 parser TEXT,
-
                 date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -156,6 +149,7 @@ def import_locations_from_json(json_path: str) -> int:
         for loc in locations:
             if get_location_status(loc['location']) is None:
                 add_location(loc['location'], loc['is_relevant'])
+        Path(json_path).unlink(missing_ok=True)
         return len(locations)
     except FileNotFoundError:
         logger.warning(f"Import JSON file not found: {json_path}. No locations imported.")
@@ -171,7 +165,6 @@ def import_locations_from_json(json_path: str) -> int:
 def export_locations_to_json(json_path: str) -> int:
     """Export all locations from the database to a JSON file with structure: [{"location": "Location Name", "is_relevant": 1}, ...]
     Returns the number of locations exported."""
-  
     if Path(json_path).exists():
         logger.info(f"JSON file already exists: {json_path}. Importing existing locations before export.")
         import_locations_from_json(json_path)

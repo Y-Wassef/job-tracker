@@ -23,9 +23,9 @@ from core.database import (
 
 from core.notifier import send_notification
 from core.filters import is_relevant, matching_keywords, location_filter, score_job
-from core.logging_config import setup_logging, get_logger
+from core.logging_config import setup_logging
 
-logger = get_logger("job-tracker")
+logger = logging.getLogger("core.main")
 
 LOCATIONS_PATH = Path("config/locations.json")
 
@@ -158,8 +158,6 @@ def validate_args(parser, args):
     if args.import_locations:
         if args.import_locations.suffix != '.json':
             parser.error("--import-locations requires a .json file.")
-    
-
 
 
 def main(
@@ -257,8 +255,7 @@ def main(
                     f"{job['location']} | "
                     f"Score: {score} | "
                     f"{url_part}"
-                    f"Parser: {parser_type} | "
-                    f"Keywords: {', '.join(matching_keywords(job['title']))}"
+                    f"Parser: {parser_type} "
                 )
                 logger.debug(f"Full URL: {job['url']}")
                 logger.debug(f"Full job: {job}")

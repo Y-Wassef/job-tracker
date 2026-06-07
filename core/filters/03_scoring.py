@@ -50,11 +50,19 @@ GERMAN_REQUIRED_PATTERNS = [
     r"\brequires\s+german\b",
     r"\bmust\s+speak\s+german\b",
     r"\bfluency\s+in\s+german\s+required\b",
+
     r"\bdeutsch\s+erforderlich\b",
     r"\bdeutsch\s+notwendig\b",
     r"\bdeutschkenntnisse\s+erforderlich\b",
-    r"\bfließend\s+deutsch\b",
     r"\bdeutsch\s+grundvoraussetzung\b",
+    r"\bfließend\s+deutsch\b",
+    r"\bfliessend\s+deutsch\b",
+
+    # stronger real-world formulations
+    r"\bverhandlungssicher(?:es|e)?\s+deutsch\b",
+    r"\bsehr\s+gute\s+deutschkenntnisse\s+erforderlich\b",
+    r"\bzwingend\s+deutsch\b",
+    r"\bdeutsch\s+zwingend\b",
 ]
 
 GERMAN_STRONG_PATTERNS = [
@@ -65,10 +73,18 @@ GERMAN_STRONG_PATTERNS = [
     r"\bstrong\s+german\b",
     r"\bfluent\s+in\s+german\b",
     r"\bhigh\s+level\s+german\b",
+
     r"\bsehr\s+gutes\s+deutsch\b",
     r"\bfortgeschrittenes\s+deutsch\b",
     r"\bausgezeichnete\s+deutschkenntnisse\b",
-    r"\bhohes\s+deutsch-niveau\b",
+    r"\bhohes\s+deutsch\s*-\s*niveau\b",
+
+    # real-world additions from your samples
+    r"\bverhandlungssicher(?:es|e)?\s+deutsch\b",
+    r"\bverhandlungssicher\s+in\s+deutsch\b",
+    r"\bsehr\s+gute\s+kenntnisse\s+in\s+deutsch\b",
+    r"\bsehr\s+gute\s+deutsch\s*-\s*kenntnisse\b",
+    r"\bdeutsch\s+verhandlungssicher\b",
 ]
 
 GERMAN_GOOD_PATTERNS = [
@@ -78,11 +94,21 @@ GERMAN_GOOD_PATTERNS = [
     r"\bsolid\s+german\b",
     r"\bproficient\s+in\s+german\b",
     r"\bintermediate\s+german\b",
+
     r"\bgutes\s+deutsch\b",
     r"\bdeutschkenntnisse\b",
+    r"\bdeutsch\s+und\s+englisch\s+kenntnisse\b",
     r"\barbeitsf[äa]higes\s+deutsch\b",
     r"\bsolide\s+deutschkenntnisse\b",
-    r"\bmittleres\s+deutsch-niveau\b",
+
+    r"\bmittleres\s+deutsch\s*-\s*niveau\b",
+
+    # very important real-world variants
+    r"\bsehr\s+gute\s+kenntnisse\s+in\s+deutsch\b",
+    r"\bsehr\s+gute\s+deutsch\s+und\s+englisch\s+kenntnisse\b",
+    r"\bsehr\s+gute\s+deutsch\s*-\s*und\s*englisch\s*kenntnisse\b",
+
+    r"\bverhandlungssicher\s+in\s+deutsch\s+und\s+englisch\b",
 ]
 
 GERMAN_BENEFICIAL_PATTERNS = [
@@ -91,13 +117,20 @@ GERMAN_BENEFICIAL_PATTERNS = [
     r"\bgerman\s+preferred\b",
     r"\bgerman\s+advantage\b",
     r"\bknowledge\s+of\s+german\b",
+
     r"\bdeutsch\s+von\s+vorteil\b",
     r"\bdeutsch\s+w[üu]nschenswert\b",
-    r"\bdeutsch-kenntnisse\s+erw[üu]nscht\b",
+    r"\bdeutschkenntnisse\s+erw[üu]nscht\b",
     r"\bvon\s+vorteil\s+deutsch\b",
-    r"\bdeutsch-grundkenntnisse\b",
-]
+    r"\bdeutsch\s+grundkenntnisse\b",
 
+    # your real-world cases
+    r"\bgerman\s+is\s+a\s+big\s+plus\b",
+    r"\bgerman\s+is\s+an\s+asset\b",
+    r"\badditional\s+language.*german\b",
+    r"\bgerman\s+or\s+french\s+is\s+a\s+plus\b",
+    r"\bany\s+additional\s+language.*plus\b",
+]
 
 def score_job(job: dict) -> int:
     """Phase 3: Score job based on title and description"""

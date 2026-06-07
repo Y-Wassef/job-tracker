@@ -1,6 +1,9 @@
 import requests
+import html
+import re
 
 from parsers.base import BaseParser
+from core.text_cleaning import clean_html_text
 
 class GreenhouseParser(BaseParser):
 
@@ -24,7 +27,7 @@ class GreenhouseParser(BaseParser):
                 'title': job.get('title'),
                 'location': job.get('location', {}).get('name'),
                 'url': job.get('absolute_url'),
-                'description': job.get('content', ''),
+                'description': clean_html_text(job.get('content', '')),
                 'parser': 'greenhouse'
             })
 

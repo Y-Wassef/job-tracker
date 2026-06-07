@@ -4,6 +4,7 @@ import time
 import logging
 from urllib.parse import urlparse
 from parsers.base import BaseParser
+from core.text_cleaning import clean_html_text
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ class WorkdayParser(BaseParser):
 
             # Extract and clean description
             description_html = job_info.get("jobDescription", "")
-            description = self._clean_html(description_html)
+            description = clean_html_text(description_html)
 
             # Small delay to avoid rate limiting
             time.sleep(0.1)
@@ -134,23 +135,6 @@ class WorkdayParser(BaseParser):
         except Exception as e:
             logger.error(f"[Workday] Failed to fetch details for {job_posting_id}: {e}")
             return "", ""
-
-    def _clean_html(self, html: str) -> str:
-        """Remove HTML tags and normalize whitespace."""
-        if not html:
-            return ""
-        # Remove HTML tags
-        text = re.sub(r'<[^>]+>', '', html)
-        # Normalize whitespace
-        text = re.sub(r'\s+', ' ', text)
-        # Decode common HTML entities
-        text = text.replace("&nbsp;", " ")
-        text = text.replace("&amp;", "&")
-        text = text.replace("&lt;", "<")
-        text = text.replace("&gt;", ">")
-        text = text.replace("&quot;", '"')
-        return text.strip()
-
 
 
     def _derive_workday_params(self, url: str) -> tuple[str, str, str, str]:
