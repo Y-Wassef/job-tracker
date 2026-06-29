@@ -10,6 +10,7 @@ from parsers.sixgroup import SixGroupParser
 from parsers.cern import CernParser
 from parsers.epam import EpamParser
 from parsers.sonarsource import SonarSourceParser
+from parsers.smartrecruiters import SmartRecruitersParser
 
 from core.database import (
     init_db,
@@ -216,6 +217,7 @@ def main(
             "cern": CernParser,
             "epam": EpamParser,
             "sonarsource": SonarSourceParser,
+            "smartrecruiters": SmartRecruitersParser
         }
 
         parser_class = PARSER_MAP.get(parser_type)
@@ -273,9 +275,9 @@ def main(
 
     if new_jobs:
         if not dry_run:
-            lines = ["<b>New Job Postings:</b>\n"]
-            for job, score in new_jobs:
-                lines.append(f"<b>{job['company']}</b>: <a href='{job['url']}'>{job['title']}</a> - {job['location']} (Score: {score})")
+            lines = [f"<b>{len(new_jobs)} New Job Postings:</b>"]
+            for i, (job, score) in enumerate(new_jobs, start=1):
+                lines.append(f"{i:02d}. <b>{job['company']}</b>: <a href='{job['url']}'>{job['title']}</a> - {job['location']} (Score: {score})")
 
             message = "\n\n".join(lines)
             send_notification(message)

@@ -32,3 +32,7 @@ companies:
   - name: Scandit
     parser: greenhouse
     board_token: scandit
+
+  - name: Avaloq
+    parser: smartrecruiters
+    company_id: Avaloq1

@@ -4,7 +4,7 @@ import time
 import logging
 from urllib.parse import urlparse
 from parsers.base import BaseParser
-from core.text_cleaning import clean_html_text
+from core.utils.html import clean_html_text
 
 logger = logging.getLogger(__name__)
 

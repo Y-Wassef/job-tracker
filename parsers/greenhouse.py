@@ -3,7 +3,7 @@ import html
 import re
 
 from parsers.base import BaseParser
-from core.text_cleaning import clean_html_text
+from core.utils.html import clean_html_text
 
 class GreenhouseParser(BaseParser):
 

@@ -1,103 +1,148 @@
-import re
-import json
 import requests
 import logging
+
 from parsers.base import BaseParser
+from core.utils.html import clean_html_text
 
 logger = logging.getLogger(__name__)
 
 
 class EpamParser(BaseParser):
-    """Parser for EPAM Systems job board (JSON API - Next.js)."""
+    """Parser for EPAM Systems jobs API."""
+
+    API_URL = "https://careers.epam.com/api/jobs/v2/search/careers-i18n"
 
     def __init__(self, company):
         self.company = company
-        self.company_name = company.get('name', 'EPAM')
-        self.api_url = 'https://careers.epam.com/_next/data/RJVBhPXDErufhnQ9bJk4z/en/jobs/switzerland.json'
+        self.company_name = company.get("name", "EPAM")
 
-    def fetch_jobs(self):
-        """Fetch jobs from EPAM Switzerland endpoint."""
+    def fetch_jobs(self) -> list[dict]:
         jobs = []
 
         try:
-            # Use a larger limit to get all jobs in one request
-            response = requests.get(
-                self.api_url,
-                params={'sort_by': 'relevance', 'slug': 'switzerland'},
-                timeout=30
-            )
-            response.raise_for_status()
-            data = response.json()
+            jobs_data = self._fetch_data()
 
-            jobs_data = data.get('pageProps', {}).get('jobs', {})
-            job_list = jobs_data.get('jobs', [])
-
-            for job in job_list:
+            for job in jobs_data:
                 try:
-                    title = job.get('name', 'N/A')
-                    location = self._extract_location(job)
-
-                    # Filter: Only Switzerland jobs
-                    if not self._is_switzerland_job(job):
-                        continue
-
-                    description = self._extract_description(job.get('description', ''))
-
-                    # Build job URL
-                    uid = job.get('uid', '')
-                    job_url = f"https://careers.epam.com/en/jobs/{uid}" if uid else "https://careers.epam.com/en/jobs/"
-
-                    jobs.append({
-                        'company': self.company_name,
-                        'title': title,
-                        'location': location,
-                        'url': job_url,
-                        'description': description,
-                        'parser': 'epam'
-                    })
+                    jobs.append(self._normalize_job(job))
                 except Exception as e:
-                    logger.error(f"Error parsing EPAM job: {e}")
-                    continue
+                    logger.error(f"Error parsing EPAM job '{job.get('name', 'Unknown')}': {e}")
 
         except Exception as e:
             logger.error(f"Error fetching EPAM jobs: {e}")
 
         return jobs
 
-    def _extract_location(self, job):
-        """Extract location from job city and country."""
-        cities = job.get('city', [])
-        if cities:
-            city_info = cities[0]
-            city_name = city_info.get('name', '')
-            state = city_info.get('state', {})
-            state_name = state.get('name', '') if isinstance(state, dict) else ''
+    def _fetch_data(self) -> list[dict]:
+        all_jobs = []
+        offset = 0
+        size = 100
 
-            parts = [city_name]
-            if state_name:
-                parts.append(state_name)
+        headers = {
+            "x-anywhere-tenant": "anywhere"
+        }
 
-            return ', '.join(parts) if parts else 'Switzerland'
+        while True:
+            params = {
+                "facets": "country=4000741400009107797",  # Switzerland
+                "from": offset,
+                "size": size,
+                "lang": "de,fr,en",
+                "sortBy": "relevance",
+                "websiteLocale": "en-us",
+            }
 
-        return 'Switzerland'
+            response = requests.get(
+                self.API_URL,
+                params=params,
+                headers=headers,
+                timeout=30
+            )
+            response.raise_for_status()
 
-    def _is_switzerland_job(self, job):
-        """Check if job is in Switzerland."""
-        cities = job.get('city', [])
-        if cities:
-            city_info = cities[0]
-            country = city_info.get('country', {})
-            country_name = country.get('name', '') if isinstance(country, dict) else ''
-            return 'switzerland' in country_name.lower()
-        return False
+            data = response.json().get("data", {})
 
-    def _extract_description(self, description_html):
-        """Extract and clean description from HTML."""
-        if not description_html:
-            return ''
+            batch = data.get("jobs", [])
+            total = data.get("total", 0)
 
-        # Remove HTML tags
-        clean = re.sub(r'<[^>]+>', '', description_html)
-        # Normalize whitespace
-        clean = re.sub(r'\s+', ' ', clean)
-        return clean.strip()
+            if not batch:
+                break
+
+            all_jobs.extend(batch)
+
+            if len(all_jobs) >= total:
+                break
+
+            offset += size
+
+        return all_jobs
+
+    def _normalize_job(self, job: dict) -> dict:
+        return {
+            "company": self.company_name,
+            "title": job.get("name", "").strip(),
+            "location": self._extract_location(job),
+            "url": self._build_url(job),
+            "description": clean_html_text(self._extract_description(job)),
+            "parser": "epam",
+        }
+
+    def _extract_location(self, job: dict) -> str:
+        locations = []
+
+        for city in (job.get("city") or []):
+            city_name = city.get("name", "").strip()
+
+            if city_name:
+                locations.append(city_name)
+
+        return "; ".join(locations)
+
+    def _build_url(self, job: dict) -> str:
+        seo = job.get("seo", {})
+
+        path = seo.get("url")
+
+        if path:
+            return f"https://careers.epam.com{path}"
+
+        uid = job.get("uid")
+
+        if uid:
+            return f"https://careers.epam.com/en/jobs/{uid}"
+
+        return "https://careers.epam.com"
+
+    def _extract_description(self, job: dict) -> str:
+        parts = []
+
+        description = job.get("description")
+        if description:
+            parts.append(description)
+
+        category = job.get("category", {})
+
+        section_names = {
+            "responsibilities": "Responsibilities",
+            "requirements": "Requirements",
+            "nice_to_have": "Nice to Have",
+            "technologies": "Technologies",
+            "about_the_project": "About the Project",
+            "about_the_customer": "About the Customer",
+        }
+
+        for key, title in section_names.items():
+            values = category.get(key)
+
+            if not values:
+                continue
+
+            if isinstance(values, list):
+                parts.append(f"\n{title}:")
+                parts.extend(values)
+
+            elif isinstance(values, str):
+                parts.append(f"\n{title}:")
+                parts.append(values)
+
+        return "\n".join(parts).strip()
