@@ -76,10 +76,6 @@
         "is_relevant": 0
     },
     {
-        "location": "ES+2 weitere \u2026",
-        "is_relevant": 0
-    },
-    {
         "location": "Warsaw",
         "is_relevant": 0
     },
@@ -445,6 +441,54 @@
     },
     {
         "location": "CH-GL",
+        "is_relevant": 1
+    },
+    {
+        "location": "Edinburgh",
+        "is_relevant": 0
+    },
+    {
+        "location": "Scotland",
+        "is_relevant": 0
+    },
+    {
+        "location": "National Capital Region",
+        "is_relevant": 0
+    },
+    {
+        "location": "Philippines",
+        "is_relevant": 0
+    },
+    {
+        "location": "Pune",
+        "is_relevant": 0
+    },
+    {
+        "location": "Maharashtra",
+        "is_relevant": 0
+    },
+    {
+        "location": "India",
+        "is_relevant": 0
+    },
+    {
+        "location": "Bioggio",
+        "is_relevant": 1
+    },
+    {
+        "location": "Canton Ticino",
+        "is_relevant": 1
+    },
+    {
+        "location": "Berlin",
+        "is_relevant": 1
+    },
+    {
+        "location": "Berne",
+        "is_relevant": 1
+    },
+    {
+        "location": "Berna",
         "is_relevant": 1
     }
 ]

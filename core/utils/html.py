@@ -39,9 +39,6 @@ def clean_html_text(text: str) -> str:
     text = re.sub(r"([a-zA-Z])([0-9])", r"\1 \2", text)
     text = re.sub(r"([0-9])([a-zA-Z])", r"\1 \2", text)
 
-    #    handles cases like "fliessendDeutsch" (optional but useful for DE jobs)
-    text = re.sub(r"([a-zäöüß])([A-ZÄÖÜ])", r"\1 \2", text, flags=re.IGNORECASE)
-
     # 6. Normalize whitespace
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n\s*\n+", "\n\n", text)
